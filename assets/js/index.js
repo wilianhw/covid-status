@@ -1,4 +1,4 @@
-(async function load() {
+(async () => {
     let global = await axios.get('https://api.covid19api.com/summary');
 
     document.getElementById('confirmed').innerText = global.data.Global.TotalConfirmed;
@@ -14,7 +14,7 @@
 
 function formatDate(date) {
     const dateFormat =  new Date(date);
-    return `${dateFormat.getFullYear()}.${dateFormat.getMonth()}.${dateFormat.getDate()} ${dateFormat.getHours()}:${dateFormat.getMinutes()}`;
+    return `${dateFormat.getFullYear()}.${(dateFormat.getMonth() + 1).toString().padStart(2, '0')}.${dateFormat.getDate()} ${dateFormat.getHours()}:${dateFormat.getMinutes().toString().padStart(2, '0')}`;
 }
 
 function topTenDeaths(countries) {
@@ -38,11 +38,11 @@ function loadPie(global) {
         document.getElementById('pizza'), {
             type: 'pie',
             data: {
-                labels: ["Confirmados", "Recuperados", "Mortes"],
+                labels: ["Confirmados", "Mortes", "Recuperados"],
                 datasets: [
                     {
                         data: [global.data.Global.NewConfirmed, global.data.Global.NewDeaths, global.data.Global.NewRecovered],
-                        backgroundColor: ["red", "yellow", "blue"]
+                        backgroundColor: ["yellow", "red", "blue"]
                     }
                 ]
             },
