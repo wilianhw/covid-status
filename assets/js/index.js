@@ -1,23 +1,27 @@
 (async () => {
-    let global = await axios.get('https://api.covid19api.com/summary');
-
-    document.getElementById('confirmed').innerText = global.data.Global.TotalConfirmed;
-    document.getElementById('death').innerText = global.data.Global.TotalDeaths;
-    document.getElementById('recovered').innerText = global.data.Global.TotalRecovered;
-    document.getElementById('date').innerText += formatDate(global.data.Global.Date);
-
-    loadPie(global);
-    const topTenCountries = topTenDeaths(global.data.Countries);
-    loadBar(topTenCountries);
-
+    let response = await axios.get('https://api.covid19api.com/summary');
+    loadSummary(response.data);
 })();
+
+function loadSummary(json) {
+    loadKPI(json);
+    loadBarChart(json);
+    loadPieChart(json);
+}
+
+function loadKPI(json) {
+    document.getElementById('confirmed').innerText = json.Global.TotalConfirmed.toLocaleString('PT');
+    document.getElementById('death').innerText = json.Global.TotalDeaths.toLocaleString('PT');
+    document.getElementById('recovered').innerText = json.Global.TotalRecovered.toLocaleString('PT');
+    document.getElementById('date').innerText += formatDate(json.Global.Date);
+}
 
 function formatDate(date) {
     const dateFormat =  new Date(date);
     return `${dateFormat.getFullYear()}.${(dateFormat.getMonth() + 1).toString().padStart(2, '0')}.${dateFormat.getDate()} ${dateFormat.getHours()}:${dateFormat.getMinutes().toString().padStart(2, '0')}`;
 }
 
-function topTenDeaths(countries) {
+function getTopTenDeaths(countries) {
     const sortCountries = countries.sort((a, b) => {
         return a.TotalDeaths < b.TotalDeaths ? 1 : a.TotalDeaths > b.TotalDeaths ? -1 : 0;
     })
@@ -33,7 +37,7 @@ function extrairLabels(countries) {
     return countries.map(country => country.Country);
 }
 
-function loadPie(global) {
+function loadPieChart(json) {
     const pizza = new Chart(
         document.getElementById('pizza'), {
             type: 'pie',
@@ -41,7 +45,7 @@ function loadPie(global) {
                 labels: ["Confirmados", "Mortes", "Recuperados"],
                 datasets: [
                     {
-                        data: [global.data.Global.NewConfirmed, global.data.Global.NewDeaths, global.data.Global.NewRecovered],
+                        data: [json.Global.NewConfirmed, json.Global.NewDeaths, json.Global.NewRecovered],
                         backgroundColor: ["yellow", "red", "blue"]
                     }
                 ]
@@ -62,7 +66,8 @@ function loadPie(global) {
     )
 }
 
-function loadBar(topTenCountries) {
+function loadBarChart(json) {
+    const topTenCountries = getTopTenDeaths(json.Countries);
     const barras = new Chart(
         document.getElementById('barras'), {
             type: 'bar',
